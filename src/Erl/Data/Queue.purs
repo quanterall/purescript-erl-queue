@@ -39,6 +39,9 @@ instance foldableQueue :: Foldable Queue where
   foldr f acc queue = queue # toList # foldr f acc
   foldMap f queue = queue # toList # foldMap f
 
+instance eqQueue :: Eq a => Eq (Queue a) where
+  eq queue1 queue2 = eq_ queue1 queue2
+
 fromFoldable :: forall f a. Foldable f => Eq a => f a -> Queue a
 fromFoldable = List.fromFoldable >>> fromList_
 
@@ -107,3 +110,5 @@ foreign import toList_ :: forall a. Queue a -> List a
 foreign import in_r_ :: forall a. a -> Queue a -> Queue a
 
 foreign import out_r_ :: forall a. Queue a -> Maybe (OutResult a)
+
+foreign import eq_ :: forall a. Queue a -> Queue a -> Boolean
