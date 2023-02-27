@@ -1,4 +1,4 @@
-{ name = "erl-sets"
+{ name = "erl-queue"
 , dependencies =
   [ "assert"
   , "console"
