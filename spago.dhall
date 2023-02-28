@@ -1,6 +1,7 @@
 { name = "erl-queue"
 , dependencies =
-  [ "assert"
+  [ "arrays"
+  , "assert"
   , "effect"
   , "erl-lists"
   , "erl-test-eunit"
@@ -8,6 +9,8 @@
   , "foldable-traversable"
   , "maybe"
   , "prelude"
+  , "quickcheck"
+  , "unfoldable"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

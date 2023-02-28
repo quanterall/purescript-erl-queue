@@ -13,6 +13,7 @@ module Erl.Data.Queue
   , getBack
   , peek
   , split
+  , toUnfoldable
   ) where
 
 import Control.Category ((>>>))
@@ -23,6 +24,7 @@ import Data.Maybe (Maybe)
 import Data.Monoid (class Monoid, (<>))
 import Data.Semigroup (class Semigroup)
 import Data.Show (class Show, show)
+import Data.Unfoldable (class Unfoldable)
 import Erl.Data.List (List)
 import Erl.Data.List as List
 import Erl.Data.Tuple (Tuple2)
@@ -51,6 +53,13 @@ instance showQueue :: Show a => Show (Queue a) where
 
 fromFoldable :: forall f a. Foldable f => Eq a => f a -> Queue a
 fromFoldable = List.fromFoldable >>> fromList_
+
+-- It's unclear to me whether this implementation is better or worse:
+--
+--   unfoldr (get >>> map (\{ item, queue } -> item /\ queue))
+--
+toUnfoldable :: forall f a. Unfoldable f => Queue a -> f a
+toUnfoldable = toList >>> List.toUnfoldable
 
 -- | Creates a new empty queue.
 empty :: forall a. Queue a
