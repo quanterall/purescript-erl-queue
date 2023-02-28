@@ -28,23 +28,21 @@ main = do
         assertEqual { expected: Queue.fromFoldable [ 42, 1337 ], actual: q }
 
       test "put, get, getBack & putFront" do
-        let
-          q = Queue.empty # Queue.put 42 # Queue.put 1337 # Queue.put 0
-          afterGet = Queue.get q
-          afterGetBack = Queue.getBack q
-          afterPutFront = Queue.putFront 5 q
-        assertEqual
-          { expected: Just { item: 42, queue: Queue.fromFoldable [ 1337, 0 ] }
-          , actual: afterGet
-          }
-        assertEqual
-          { expected: Just { item: 0, queue: Queue.fromFoldable [ 42, 1337 ] }
-          , actual: afterGetBack
-          }
-        assertEqual
-          { expected: Queue.fromFoldable [ 5, 42, 1337, 0 ]
-          , actual: afterPutFront
-          }
+        quickCheck \(x :: Int) (y :: Int) (z :: Int) -> do
+          let
+            q = Queue.empty # Queue.put x # Queue.put y # Queue.put z
+            afterGet = Queue.get q
+          (Just { item: x, queue: Queue.fromFoldable [ y, z ] }) === afterGet
+        quickCheck \(x :: Int) (y :: Int) (z :: Int) -> do
+          let
+            q = Queue.empty # Queue.put x # Queue.put y # Queue.put z
+            afterGetBack = Queue.getBack q
+          (Just { item: z, queue: Queue.fromFoldable [ x, y ] }) === afterGetBack
+        quickCheck \(x :: Int) (y :: Int) (z :: Int) (inFront :: Int) -> do
+          let
+            q = Queue.empty # Queue.put x # Queue.put y # Queue.put z
+            afterPutFront = Queue.putFront inFront q
+          (Queue.fromFoldable [ inFront, x, y, z ]) === afterPutFront
 
       test "get on empty returns `Nothing`" do
         let
@@ -53,11 +51,26 @@ main = do
         assertEqual { expected: Nothing, actual: afterGet }
 
       test "peek leaves the queue unchanged" do
-        let
-          q = 42 # Queue.singleton # Queue.put 1337 # Queue.put 0
-          afterPeek = Queue.peek q
-        assertEqual { expected: Just 42, actual: afterPeek }
-        assertEqual { expected: Queue.fromFoldable [ 42, 1337, 0 ], actual: q }
+        quickCheck \(x :: Int) (xs :: Array Int) -> do
+          let
+            q = (x # Queue.singleton) <> Queue.fromFoldable xs
+            afterPeek = Queue.peek q
+          Just x === afterPeek
+
+      test "Appending two queues works" do
+        quickCheck \(xs :: Array Int) (ys :: Array Int) -> do
+          let q = Queue.fromFoldable xs <> Queue.fromFoldable ys
+          ((xs <> ys) # Queue.fromFoldable) === q
+
+      test "Right identity" do
+        quickCheck \(xs :: Array Int) -> do
+          let q = Queue.fromFoldable xs
+          (q <> Queue.empty) === q
+
+      test "Left identity" do
+        quickCheck \(xs :: Array Int) -> do
+          let q = Queue.fromFoldable xs
+          (Queue.empty <> q) === q
 
       test "split creates two queues from one" do
         let
