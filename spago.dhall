@@ -1,10 +1,10 @@
 { name = "erl-queue"
 , dependencies =
   [ "assert"
-  , "console"
   , "effect"
   , "erl-lists"
   , "erl-test-eunit"
+  , "erl-tuples"
   , "foldable-traversable"
   , "maybe"
   , "prelude"

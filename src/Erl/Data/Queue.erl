@@ -1,7 +1,7 @@
--module(erl_data_set@foreign).
+-module(erl_data_queue@foreign).
 
 -export([fromList_/1, empty_/0, isEmpty_/1, singleton_/1, out_/1, in_/2, len_/1, join_/2,
-         fold_/3, reverse_/1, toList_/1, in_r_/2, out_r_/1, eq_/2]).
+         fold_/3, reverse_/1, toList_/1, in_r_/2, out_r_/1, eq_/2, peek_/1, split_/2]).
 
 fromList_(L) ->
   queue:from_list(L).
@@ -54,3 +54,19 @@ out_r_(Q) ->
 
 eq_(Q1, Q2) ->
   Q1 =:= Q2.
+
+peek_(Q) ->
+  case queue:peek(Q) of
+    {value, E1} ->
+      {just, E1};
+    empty ->
+      {nothing}
+  end.
+
+split_(N, Q) ->
+  case queue:len(Q) of
+    Length when Length >= N ->
+      {just, queue:split(N, Q)};
+    _Otherwise ->
+      {nothing}
+  end.
