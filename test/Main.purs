@@ -8,7 +8,6 @@ import Data.Array as Array
 import Data.Foldable (foldl)
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Erl.Data.List (nil, (:))
 import Erl.Data.List as List
 import Erl.Data.Queue (Queue)
 import Erl.Data.Queue as Queue
@@ -16,16 +15,27 @@ import Erl.Data.Tuple (tuple2)
 import Erl.Test.EUnit (suite, test)
 import Erl.Test.EUnit as EUnit
 import Test.Assert (assertEqual, assertFalse, assertTrue)
-import Test.QuickCheck (quickCheck, (===))
+import Test.QuickCheck (class Testable, Result(..), quickCheck, (===))
+
+newtype Properties = Properties (Array Result)
+
+instance Testable Properties where
+  test (Properties results) = do
+    pure $ foldl keepFailure Success results
+    where
+    keepFailure _oldResult (Failed reason) = Failed reason
+    keepFailure oldResult _newResult = oldResult
 
 main :: Effect Unit
 main = do
   void $ EUnit.runTests do
     suite "queue operations" do
       test "put" do
-        let q = Queue.empty # Queue.put 42 # Queue.put 1337
-        assertEqual { expected: 42 : 1337 : nil, actual: Queue.toList q }
-        assertEqual { expected: Queue.fromFoldable [ 42, 1337 ], actual: q }
+        quickCheck \(x :: Int) -> do
+          Properties
+            [ Queue.singleton x === (Queue.empty # Queue.put x)
+            , Queue.singleton x === Queue.fromFoldable [ x ]
+            ]
 
       test "put, get, getBack & putFront" do
         quickCheck \(x :: Int) (y :: Int) (z :: Int) -> do
@@ -73,11 +83,12 @@ main = do
           (Queue.empty <> q) === q
 
       test "split creates two queues from one" do
-        let
-          q = Queue.fromFoldable [ 1, 2, 3, 4, 5 ]
-          splitResult = Queue.split 3 q
-          expectedTuple = tuple2 (Queue.fromFoldable [ 1, 2, 3 ]) (Queue.fromFoldable [ 4, 5 ])
-        assertEqual { expected: Just expectedTuple, actual: splitResult }
+        quickCheck \(xs :: Array Int) (ys :: Array Int) -> do
+          let
+            q = Queue.fromFoldable xs <> Queue.fromFoldable ys
+            splitResult = Queue.split (Array.length xs) q
+            expectedTuple = tuple2 (Queue.fromFoldable xs) (Queue.fromFoldable ys)
+          Just expectedTuple === splitResult
 
       test "`isEmpty`" do
         let q = Queue.empty :: Queue Int
