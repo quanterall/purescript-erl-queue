@@ -1,3 +1,4 @@
+-- | A FIFO queue as represented by the `queue` Erlang module.
 module Erl.Data.Queue
   ( Queue
   , fromFoldable
@@ -14,12 +15,14 @@ module Erl.Data.Queue
   , peek
   , split
   , toUnfoldable
+  , filter
   ) where
 
 import Control.Category ((>>>))
 import Data.Eq (class Eq, (==))
 import Data.Foldable (class Foldable, foldMap, foldl, foldr)
 import Data.Function ((#))
+import Data.Functor (class Functor)
 import Data.Maybe (Maybe)
 import Data.Monoid (class Monoid, (<>))
 import Data.Semigroup (class Semigroup)
@@ -50,6 +53,9 @@ instance eqQueue :: Eq a => Eq (Queue a) where
 
 instance showQueue :: Show a => Show (Queue a) where
   show queue = "fromFoldable " <> show (toList queue)
+
+instance functorQueue :: Functor Queue where
+  map f queue = map_ f queue
 
 fromFoldable :: forall f a. Foldable f => Eq a => f a -> Queue a
 fromFoldable = List.fromFoldable >>> fromList_
@@ -109,6 +115,11 @@ reverse queue = reverse_ queue
 peek :: forall a. Queue a -> Maybe a
 peek queue = peek_ queue
 
+-- | Filters a queue using the supplied predicate, returning a new queue containing only the
+-- | elements that satisfy the predicate.
+filter :: forall a. (a -> Boolean) -> Queue a -> Queue a
+filter f queue = filter_ f queue
+
 foreign import fromList_ :: forall a. List a -> Queue a
 
 foreign import empty_ :: forall a. Queue a
@@ -140,3 +151,7 @@ foreign import eq_ :: forall a. Queue a -> Queue a -> Boolean
 foreign import peek_ :: forall a. Queue a -> Maybe a
 
 foreign import split_ :: forall a. Int -> Queue a -> Maybe (Tuple2 (Queue a) (Queue a))
+
+foreign import map_ :: forall a b. (a -> b) -> Queue a -> Queue b
+
+foreign import filter_ :: forall a. (a -> Boolean) -> Queue a -> Queue a

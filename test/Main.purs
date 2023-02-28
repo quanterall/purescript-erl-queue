@@ -127,3 +127,19 @@ main = do
             # Queue.toList
             # (\result -> result === (xs # List.fromFoldable))
 
+      test "`map`" do
+        quickCheck \(xs :: Array Int) ->
+          xs
+            # Queue.fromFoldable
+            # map (_ + 1)
+            # Queue.toList
+            # (\result -> result === (xs # List.fromFoldable # map (_ + 1)))
+
+      test "`filter`" do
+        quickCheck \(xs :: Array Int) ->
+          xs
+            # Queue.fromFoldable
+            # Queue.filter (_ > 0)
+            # Queue.toList
+            # (\result -> result === (xs # List.fromFoldable # List.filter (_ > 0)))
+

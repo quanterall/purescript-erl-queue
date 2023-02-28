@@ -1,7 +1,8 @@
 -module(erl_data_queue@foreign).
 
 -export([fromList_/1, empty_/0, isEmpty_/1, singleton_/1, out_/1, in_/2, len_/1, join_/2,
-         fold_/3, reverse_/1, toList_/1, in_r_/2, out_r_/1, eq_/2, peek_/1, split_/2]).
+         fold_/3, reverse_/1, toList_/1, in_r_/2, out_r_/1, eq_/2, peek_/1, split_/2, map_/2,
+         filter_/2]).
 
 fromList_(L) ->
   queue:from_list(L).
@@ -70,3 +71,9 @@ split_(N, Q) ->
     _Otherwise ->
       {nothing}
   end.
+
+map_(F, Q) ->
+  queue:filtermap(fun(E) -> {true, F(E)} end, Q).
+
+filter_(P, Q) ->
+  queue:filter(P, Q).
