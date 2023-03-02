@@ -18,19 +18,15 @@ module Erl.Data.Queue
   , filter
   ) where
 
-import Control.Category ((>>>))
-import Data.Eq (class Eq, (==))
+import Prelude
+
 import Data.Foldable (class Foldable, foldMap, foldl, foldr)
-import Data.Function ((#))
-import Data.Functor (class Functor)
 import Data.Maybe (Maybe)
-import Data.Monoid (class Monoid, (<>))
-import Data.Semigroup (class Semigroup)
-import Data.Show (class Show, show)
 import Data.Unfoldable (class Unfoldable)
 import Erl.Data.List (List)
 import Erl.Data.List as List
 import Erl.Data.Tuple (Tuple2)
+import Test.QuickCheck (class Arbitrary, arbitrary)
 
 type OutResult a = { item :: a, queue :: Queue a }
 
@@ -57,7 +53,12 @@ instance showQueue :: Show a => Show (Queue a) where
 instance functorQueue :: Functor Queue where
   map f queue = map_ f queue
 
-fromFoldable :: forall f a. Foldable f => Eq a => f a -> Queue a
+instance Arbitrary a => Arbitrary (Queue a) where
+  arbitrary = do
+    (xs :: Array a) <- arbitrary
+    xs # fromFoldable # pure
+
+fromFoldable :: forall f a. Foldable f => f a -> Queue a
 fromFoldable = List.fromFoldable >>> fromList_
 
 -- It's unclear to me whether this implementation is better or worse:

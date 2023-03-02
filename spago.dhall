@@ -4,6 +4,7 @@
   , "assert"
   , "effect"
   , "erl-lists"
+  , "erl-quickcheck-helpers"
   , "erl-test-eunit"
   , "erl-tuples"
   , "foldable-traversable"
